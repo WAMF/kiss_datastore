@@ -28,6 +28,7 @@ class DatastoreItem {
     required this.uploadDate,
     required this.providerName,
     this.prividerIdentifier,
+    this.extra = const {},
   });
 
   factory DatastoreItem.fromJson(Map<String, dynamic> json) {
@@ -38,6 +39,7 @@ class DatastoreItem {
       uploadDate: DateTime.fromMillisecondsSinceEpoch(epoch),
       prividerIdentifier: json['prividerIdentifier'] as String?,
       providerName: json['providerName'] as String,
+      extra: json['extra'] as Map<String, dynamic>,
     );
   }
   final Uri uri;
@@ -45,6 +47,7 @@ class DatastoreItem {
   final DateTime uploadDate;
   final String? prividerIdentifier;
   final String providerName;
+  final Map<String, dynamic> extra;
 
   Map<String, dynamic> toJson() {
     return {
@@ -53,6 +56,7 @@ class DatastoreItem {
       'uploadDate': uploadDate.millisecondsSinceEpoch,
       'prividerIdentifier': prividerIdentifier,
       'providerName': providerName,
+      'extra': extra,
     };
   }
 }
@@ -66,14 +70,14 @@ abstract class Datastore {
     String? contentEncoding,
     String? contentLanguage,
     String? cacheControl,
-    void Function(DatastoreItem) onComplete,
+    void Function(DatastoreItem)? onComplete,
   });
 
   Future<bool> exists(String path);
 
   Future<void> delete(String path);
 
-  Future<Uri> getDownloadLink(String path);
+  Future<Uri> getDownloadLink(String path, {DateTime? expires});
 
-  Future<Uint8List?> get(String path);
+  Future<DatastoreItem> get(String path);
 }
