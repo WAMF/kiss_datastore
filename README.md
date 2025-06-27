@@ -13,6 +13,9 @@ A simple, abstract datastore interface for Dart with an in-memory implementation
 
 ## Usage
 
+This is the base interface package, included are two reference implementations.
+** Concrete implemenations for different providers are provided in other packages. **
+
 ### Basic Operations
 
 ```dart
@@ -48,35 +51,31 @@ final retrievedItem = await datastore.get('hello.txt');
 await datastore.delete('hello.txt');
 ```
 
-### HTTP Client
+This is also a file based version if local persistance is needed.
+
+### Slow Mode Configuration
 
 ```dart
-// Get HTTP client
-final client = InMemoryDatastore.httpClient;
-
-// Fetch data via HTTP
-final response = await client.get(
-  Uri.parse('http://localhost:8080/in_memory/my-instance/hello.txt')
+// Configure slow mode per instance
+final slowDatastore = InMemoryDatastore(
+  'test-instance',
+  true,                                    // Enable slow mode
+  const Duration(milliseconds: 50),        // Delay between chunks
+  1024,                                    // Chunk size in bytes
 );
 
-// Read response
-final responseData = <int>[];
-await response.listen(responseData.addAll).asFuture();
-print('Content: ${utf8.decode(responseData)}');
-```
-
-### Slow Mode for Testing
-
-```dart
-// Enable slow upload simulation
-InMemoryDatastore.uploadSlowMode = true;
-InMemoryDatastore.uploadSlowModeDelay = Duration(milliseconds: 100);
-InMemoryDatastore.uploadSlowModeChunkSize = 1024;
+// Or for FileDatastore
+final slowFileStore = FileDatastore(
+  './test_storage',
+  uploadSlowMode: true,
+  uploadSlowModeDelay: const Duration(milliseconds: 100),
+  uploadSlowModeChunkSize: 512,
+);
 
 // Upload will now be chunked with delays
-final upload = datastore.putData('large-file.bin', largeData);
+final upload = slowDatastore.putData('large-file.bin', largeData);
 
-// Control upload
+// Control upload (only works in slow mode)
 upload.pause();   // Pause upload
 upload.resume();  // Resume upload  
 upload.cancel();  // Cancel upload
@@ -91,25 +90,11 @@ dart test
 ```
 
 The test suite covers:
-- Basic CRUD operations
+- Basic CRUD operations for both implementations
 - Upload progress and control
 - Slow mode simulation  
 - HTTP client functionality
-- Multiple instance isolation
+- Instance isolation
+- File system operations
 - Error handling
 
-## Interface
-
-The `Datastore` abstract class defines:
-
-- `putData()` - Upload data with progress tracking
-- `get()` - Retrieve stored item metadata
-- `exists()` - Check if item exists
-- `delete()` - Remove stored item
-- `getDownloadLink()` - Get download URL
-
-Perfect for:
-- **Testing** cloud storage implementations
-- **Development** without external dependencies
-- **Prototyping** storage-based applications
-- **CI/CD** pipelines requiring storage simulation
