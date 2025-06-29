@@ -1,7 +1,7 @@
 name: kiss_datastore
 description: A simple, abstract datastore interface for Dart with an in-memory implementation for testing and development.
 version: 0.1.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/WAMF/kiss_datastore
 
 environment:
   sdk: ^3.8.0
